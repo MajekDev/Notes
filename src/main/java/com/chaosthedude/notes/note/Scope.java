@@ -40,6 +40,16 @@ public class Scope {
 		}
 	};
 
+	/**
+	 * Notes stored on the server and shared with every player. These have no local save directory.
+	 */
+	public static final Scope SERVER = new Scope("notes.scope.server", "server") {
+		@Override
+		public File getCurrentSaveDirectory() {
+			throw new UnsupportedOperationException("Server notes are not saved locally");
+		}
+	};
+
 	private String unlocName;
 	private String saveDir;
 

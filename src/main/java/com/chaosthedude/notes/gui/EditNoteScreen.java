@@ -1,8 +1,14 @@
 package com.chaosthedude.notes.gui;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.chaosthedude.notes.Notes;
+import com.chaosthedude.notes.network.NotesClientNetworking;
 import com.chaosthedude.notes.note.Note;
 import com.chaosthedude.notes.note.Scope;
+import com.chaosthedude.notes.note.ServerNote;
+import com.chaosthedude.notes.note.ServerNoteCache;
 import com.chaosthedude.notes.util.StringUtils;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -18,7 +24,7 @@ public class EditNoteScreen extends Screen {
 
 	private final Screen parentScreen;
 	private NotesButton saveButton;
-	private NotesButton globalButton;
+	private NotesButton scopeButton;
 	private NotesButton insertBiomeButton;
 	private NotesButton insertChunkButton;
 	private NotesButton insertCoordsButton;
@@ -36,7 +42,8 @@ public class EditNoteScreen extends Screen {
 		super(Component.literal(note != null ? I18n.get("notes.editNote") : I18n.get("notes.newNote")));
 		this.parentScreen = parentScreen;
 		if (note != null) {
-			this.note = note;
+			// Edit a copy of server notes so unsaved changes don't show up in the shared cache
+			this.note = note instanceof ServerNote serverNote ? serverNote.copyForEditing() : note;
 			newNote = false;
 		} else {
 			this.note = new Note("New Note", "", Scope.getCurrentScope());
@@ -96,27 +103,27 @@ public class EditNoteScreen extends Screen {
 	public void extractRenderState(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTicks) {
 		super.extractRenderState(guiGraphics, mouseX, mouseY, partialTicks);
 		guiGraphics.centeredText(font, title.getString(), width / 2 + 60, 15, 0xffffffff);
-		guiGraphics.centeredText(font, I18n.get("notes.saveAs", note.getUncollidingSaveName(note.getTitle())), width / 2 + 55, 65, 0xffaaaaaa);
+		final String saveName = scope == Scope.SERVER ? note.getTitle() : note.getUncollidingSaveName(note.getTitle());
+		guiGraphics.centeredText(font, I18n.get("notes.saveAs", saveName), width / 2 + 55, 65, 0xffaaaaaa);
 	}
 
 	private void setupButtons() {
 		saveButton = addRenderableWidget(new NotesButton(10, 40, 110, 20, Component.translatable("notes.save"), (onPress) -> {
 			updateNoteText();
-			note.setScope(scope);
-			note.save();
-			minecraft.gui.setScreen(new ViewNoteScreen(parentScreen, note));
-			if (pinned) {
-				Notes.pinnedNote = note;
-			}
-		}));
-		globalButton = addRenderableWidget(new NotesButton(10, 65, 110, 20, Component.translatable("notes.global").append(Component.literal(": ").append(scope == Scope.GLOBAL ? Component.translatable("notes.on") : Component.translatable("notes.off"))), (onPress) -> {
-			if (scope == Scope.GLOBAL) {
-				scope = Scope.getCurrentScope();
-			} else {
-				scope = Scope.GLOBAL;
+			final Note savedNote = saveNote();
+			if (savedNote == null) {
+				return;
 			}
 
-			globalButton.setMessage(Component.literal(I18n.get("notes.global") + (scope == Scope.GLOBAL ? ": " + I18n.get("notes.on") : ": " + I18n.get("notes.off"))));
+			minecraft.gui.setScreen(new ViewNoteScreen(parentScreen, savedNote));
+			if (pinned) {
+				Notes.pinnedNote = savedNote;
+			}
+		}));
+		scopeButton = addRenderableWidget(new NotesButton(10, 65, 110, 20, getScopeMessage(), (onPress) -> {
+			final List<Scope> scopes = getAvailableScopes();
+			scope = scopes.get((scopes.indexOf(scope) + 1) % scopes.size());
+			scopeButton.setMessage(getScopeMessage());
 		}));
 		insertBiomeButton = addRenderableWidget(new NotesButton(10, 100, 110, 20, Component.translatable("notes.biome"), (onPress) -> {
 			insertBiome();
@@ -152,6 +159,61 @@ public class EditNoteScreen extends Screen {
 		if (!newNote) {
 			setFocused(noteTextField);
 		}
+	}
+
+	/**
+	 * Saves the note in the selected scope, moving it between a local file and the server if the scope changed.
+	 * Returns the saved note, or null if it couldn't be saved.
+	 */
+	private Note saveNote() {
+		if (scope == Scope.SERVER) {
+			if (!NotesClientNetworking.checkFits(note)) {
+				return null;
+			}
+
+			final ServerNote serverNote;
+			if (note instanceof ServerNote existing) {
+				serverNote = existing;
+			} else {
+				serverNote = ServerNote.create(note.getTitle(), note.getRawText());
+				if (!newNote) {
+					note.getPrevSaveFile().delete();
+				}
+			}
+			serverNote.save();
+			return ServerNoteCache.get(serverNote.getId());
+		}
+
+		if (note instanceof ServerNote serverNote) {
+			final Note localNote = new Note(serverNote.getTitle(), serverNote.getRawText(), scope);
+			localNote.save();
+			serverNote.delete();
+			return localNote;
+		}
+
+		note.setScope(scope);
+		note.save();
+		return note;
+	}
+
+	/**
+	 * The scopes the scope button cycles through: this world or server, global, and shared server notes if the
+	 * server supports them.
+	 */
+	private List<Scope> getAvailableScopes() {
+		final List<Scope> scopes = new ArrayList<>();
+		if (Scope.currentScopeIsValid()) {
+			scopes.add(Scope.getCurrentScope());
+		}
+		scopes.add(Scope.GLOBAL);
+		if (ServerNoteCache.isAvailable()) {
+			scopes.add(Scope.SERVER);
+		}
+		return scopes;
+	}
+
+	private Component getScopeMessage() {
+		return Component.translatable("notes.scope").append(": ").append(Component.translatable(scope.getUnlocalizedName()));
 	}
 
 	private void updateNoteText() {

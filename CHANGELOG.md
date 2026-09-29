@@ -1,3 +1,11 @@
+## Sharing fork 1 (based on 2.3.0)
+### Fabric 26.3
+- Share a copy of a note with another player. Offline players get it the next time they join, and recipients can accept or decline
+- Added shared server notes that every player on the server can see and edit
+- The Global toggle in the editor is now a Scope button: this world or server, Global, or Shared
+- Fixed the Open Notes key not appearing in the Controls screen, so it couldn't be rebound
+- Notes must now also be installed on the server for sharing; without it the mod works as before
+
 ## Version 3.2.0
 ### NeoForge 26.3, 26.2
 - Updated to NeoForge 26.3

@@ -4,21 +4,24 @@
   "version": "${version}",
 
   "name": "Notes",
-  "description": "Clientside in-game notepad.",
+  "description": "In-game notepad. Install on the server too to share notes with other players and keep shared server notes.",
   "authors": [
     "ChaosTheDude"
   ],
   "contact": {
     "homepage": "https://www.curseforge.com/minecraft/mc-mods/notes",
-    "sources": "https://github.com/MattCzyr/Note"
+    "sources": "https://github.com/MajekDev/Notes"
   },
 
   "license": "CC BY-NC-SA 4.0",
 
   "accessWidener": "notes.accesswidener",
 
-  "environment": "client",
+  "environment": "*",
   "entrypoints": {
+    "main": [
+      "com.chaosthedude.notes.NotesCommon"
+    ],
     "client": [
       "com.chaosthedude.notes.Notes"
     ]

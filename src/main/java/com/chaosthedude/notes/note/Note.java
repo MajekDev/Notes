@@ -32,9 +32,9 @@ public class Note {
 	private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern(NotesConfig.dateFormat);
 	private static final Font FONT = Minecraft.getInstance().font;
 
-	private String title;
-	private String rawText;
-	private Scope scope;
+	protected String title;
+	protected String rawText;
+	protected Scope scope;
 	private File prevSaveFile;
 	private File saveFile;
 	private File saveDir;
@@ -50,6 +50,12 @@ public class Note {
 
 	public Note(File file) {
 		update(file);
+	}
+
+	/**
+	 * For notes that aren't backed by a local file. Subclasses must set the title, text, and scope.
+	 */
+	protected Note() {
 	}
 
 	public Note setTitle(String newTitle) {
@@ -281,6 +287,8 @@ public class Note {
 				notes.add(new Note(file));
 			}
 		}
+
+		notes.addAll(ServerNoteCache.getNotes());
 
 		Collections.sort(notes, Collections.reverseOrder(new Comparator<Note>() {
 			@Override

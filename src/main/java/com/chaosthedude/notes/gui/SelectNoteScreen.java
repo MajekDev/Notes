@@ -1,5 +1,8 @@
 package com.chaosthedude.notes.gui;
 
+import com.chaosthedude.notes.network.NotesClientNetworking;
+import com.chaosthedude.notes.note.PendingShares;
+
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
@@ -14,6 +17,8 @@ public class SelectNoteScreen extends Screen {
 	private NotesButton copyButton;
 	private NotesButton deleteButton;
 	private NotesButton pinButton;
+	private NotesButton shareButton;
+	private NotesButton inboxButton;
 	private NotesButton cancelButton;
 	private NotesList selectionList;
 
@@ -39,6 +44,10 @@ public class SelectNoteScreen extends Screen {
 		if (selectionList.getSelected() != null) {
 			pinButton.setMessage(selectionList.getSelected().isPinned() ? Component.translatable("notes.unpin") : Component.translatable("notes.pin"));
 		}
+
+		shareButton.active = selectionList.getSelected() != null && NotesClientNetworking.canShare();
+		inboxButton.visible = !PendingShares.isEmpty();
+		inboxButton.setMessage(Component.translatable("notes.inbox", PendingShares.size()));
 	}
 
 	public void selectNote(NotesListEntry entry) {
@@ -48,6 +57,7 @@ public class SelectNoteScreen extends Screen {
 		editButton.active = enable;
 		copyButton.active = enable;
 		pinButton.active = enable;
+		shareButton.active = enable && NotesClientNetworking.canShare();
 	}
 
 	private void setupButtons() {
@@ -83,6 +93,15 @@ public class SelectNoteScreen extends Screen {
 				selectionList.refreshList();
 			}
 		}));
+		shareButton = addRenderableWidget(new NotesButton(10, 200, 110, 20, Component.translatable("notes.share"), (onPress) -> {
+			NotesListEntry notesEntry = SelectNoteScreen.this.selectionList.getSelected();
+			if (notesEntry != null && NotesClientNetworking.checkFits(notesEntry.getNote())) {
+				minecraft.gui.setScreen(new SharePlayerScreen(SelectNoteScreen.this, notesEntry.getNote()));
+			}
+		}));
+		inboxButton = addRenderableWidget(new NotesButton(10, 10, 110, 20, Component.translatable("notes.inbox", PendingShares.size()), (onPress) -> {
+			minecraft.gui.setScreen(new IncomingShareScreen(SelectNoteScreen.this));
+		}));
 		cancelButton = addRenderableWidget(new NotesButton(10, height - 30, 110, 20, Component.translatable("gui.cancel"), (onPress) -> {
 			minecraft.gui.setScreen(prevScreen);
 		}));
@@ -92,6 +111,8 @@ public class SelectNoteScreen extends Screen {
 		editButton.active = false;
 		copyButton.active = false;
 		pinButton.active = false;
+		shareButton.active = false;
+		inboxButton.visible = !PendingShares.isEmpty();
 	}
 
 }

@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.chaosthedude.notes.Notes;
 import com.chaosthedude.notes.config.NotesConfig;
+import com.chaosthedude.notes.network.NotesClientNetworking;
 import com.chaosthedude.notes.note.Note;
 import com.chaosthedude.notes.util.RenderUtils;
 import com.chaosthedude.notes.util.StringUtils;
@@ -20,6 +21,7 @@ public class ViewNoteScreen extends Screen {
 	private NotesButton pinButton;
 	private NotesButton editButton;
 	private NotesButton deleteButton;
+	private NotesButton shareButton;
 	private NotesButton prevButton;
 	private NotesButton nextButton;
 	private Note note;
@@ -73,6 +75,12 @@ public class ViewNoteScreen extends Screen {
 				minecraft.gui.setScreen(null);
 			}
 		}));
+		shareButton = addRenderableWidget(new NotesButton(10, 115, 110, 20, Component.translatable("notes.share"), (onPress) -> {
+			if (NotesClientNetworking.checkFits(note)) {
+				minecraft.gui.setScreen(new SharePlayerScreen(ViewNoteScreen.this, note));
+			}
+		}));
+		shareButton.active = NotesClientNetworking.canShare();
 		doneButton = addRenderableWidget(new NotesButton(10, height - 30, 110, 20, Component.translatable("gui.done"), (onPress) -> {
 			minecraft.gui.setScreen(parentScreen);
 		}));
