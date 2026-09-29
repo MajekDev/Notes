@@ -28,10 +28,11 @@ public class Notes implements ClientModInitializer {
 	public void onInitializeClient() {
 		NotesConfig.load();
 		
-		openNotes = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.openNotes", InputConstants.KEY_N, new KeyMapping.Category(Identifier.fromNamespaceAndPath(MODID, "keys"))));
-		
+		// The category must be registered (not just constructed) or the key won't be sorted into the Controls screen
+		openNotes = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.openNotes", InputConstants.KEY_N, KeyMapping.Category.register(Identifier.fromNamespaceAndPath(MODID, "keys"))));
+
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
-		    while (openNotes.isDown()) {
+		    while (openNotes.consumeClick()) {
 		    	client.gui.setScreen(new SelectNoteScreen(client.gui.screen()));
 		    }
 		});
