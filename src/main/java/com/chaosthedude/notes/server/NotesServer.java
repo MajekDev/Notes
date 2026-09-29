@@ -86,8 +86,14 @@ public final class NotesServer {
 		for (ServerNoteData note : store.getNotes()) {
 			ServerPlayNetworking.send(player, new ServerNoteUpdated(note));
 		}
-		for (PendingShare share : store.getInbox(player.getUUID())) {
+		final List<PendingShare> inbox = store.getInbox(player.getUUID());
+		for (PendingShare share : inbox) {
 			ServerPlayNetworking.send(player, new IncomingShare(share.id(), share.sender(), share.title(), share.text()));
+		}
+		if (inbox.size() == 1) {
+			player.sendSystemMessage(Component.translatable("notes.share.waitingOne", openNotesKey()));
+		} else if (inbox.size() > 1) {
+			player.sendSystemMessage(Component.translatable("notes.share.waitingMany", inbox.size(), openNotesKey()));
 		}
 	}
 
@@ -138,6 +144,7 @@ public final class NotesServer {
 
 		if (onlineRecipient != null) {
 			ServerPlayNetworking.send(onlineRecipient, new IncomingShare(share.id(), share.sender(), share.title(), share.text()));
+			onlineRecipient.sendSystemMessage(Component.translatable("notes.share.received", share.sender(), title, openNotesKey()));
 			sender.sendSystemMessage(Component.translatable("notes.share.sent", title, recipientName));
 		} else {
 			sender.sendSystemMessage(Component.translatable("notes.share.queued", recipientName, title));
@@ -220,6 +227,13 @@ public final class NotesServer {
 
 		lastTimes.put(player.getUUID(), now);
 		return false;
+	}
+
+	/**
+	 * Shows whatever key the player has bound to Open Notes, resolved on their client.
+	 */
+	private static Component openNotesKey() {
+		return Component.keybind("key.openNotes");
 	}
 
 	private static String cleanTitle(String title) {

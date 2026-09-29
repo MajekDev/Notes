@@ -77,6 +77,9 @@
     "notes.share.self": "You can't share a note with yourself",
     "notes.share.inboxFull": "%s has too many shared notes waiting. Try again later.",
     "notes.share.slowDown": "You're sharing notes too quickly. Wait a moment and try again.",
+    "notes.share.received": "%s shared a note with you: \"%s\". Press %s to review it.",
+    "notes.share.waitingOne": "You have a shared note waiting. Press %s to review it.",
+    "notes.share.waitingMany": "You have %s shared notes waiting. Press %s to review them.",
     "notes.share.accepted": "%s accepted \"%s\"",
     "notes.share.declined": "%s declined \"%s\"",
     "notes.server.full": "This server has reached its limit of %s shared notes"
