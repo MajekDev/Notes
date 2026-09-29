@@ -1,3 +1,9 @@
+## Sharing fork 2 (based on 2.3.0)
+### Fabric 26.3
+- Renamed scopes to say who can see a note: This Server / This World, All Worlds, and Everyone
+- The editor now explains who can see the note under the selected scope
+- Players now get a chat message when someone shares a note with them, and on login if notes are waiting
+
 ## Sharing fork 1 (based on 2.3.0)
 ### Fabric 26.3
 - Share a copy of a note with another player. Offline players get it the next time they join, and recipients can accept or decline
