@@ -61,3 +61,6 @@ $RECYCLE.BIN/
 Network Trash Folder
 Temporary Items
 .apdisk
+
+# MemSearch plugin data
+.memsearch/
