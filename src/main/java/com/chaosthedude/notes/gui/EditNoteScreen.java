@@ -103,8 +103,11 @@ public class EditNoteScreen extends Screen {
 	public void extractRenderState(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTicks) {
 		super.extractRenderState(guiGraphics, mouseX, mouseY, partialTicks);
 		guiGraphics.centeredText(font, title.getString(), width / 2 + 60, 15, 0xffffffff);
-		final String saveName = scope == Scope.SERVER ? note.getTitle() : note.getUncollidingSaveName(note.getTitle());
-		guiGraphics.centeredText(font, I18n.get("notes.saveAs", saveName), width / 2 + 55, 65, 0xffaaaaaa);
+		// Spell out who can see the note, since scope names alone were easy to misread
+		guiGraphics.centeredText(font, I18n.get(scope.getUnlocalizedName() + ".description"), width / 2 + 55, 65, 0xffffffff);
+		if (scope != Scope.SERVER) {
+			guiGraphics.centeredText(font, I18n.get("notes.saveAs", note.getUncollidingSaveName(note.getTitle())), width / 2 + 55, 77, 0xffaaaaaa);
+		}
 	}
 
 	private void setupButtons() {
@@ -153,7 +156,7 @@ public class EditNoteScreen extends Screen {
 			setFocused(noteTitleField);
 		}
 
-		noteTextField = addRenderableWidget(new NotesTextField(font, 130, 85, width - 140, height - 95));
+		noteTextField = addRenderableWidget(new NotesTextField(font, 130, 92, width - 140, height - 102));
 		noteTextField.setValue(note.getFilteredText());
 		noteTextField.setScrollAmount(0);
 		if (!newNote) {

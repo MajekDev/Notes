@@ -37,10 +37,14 @@
     "notes.view": "View",
 
     "_comment": "SCOPE",
-    "notes.scope.local": "Local",
-    "notes.scope.global": "Global",
-    "notes.scope.remote": "Remote",
-    "notes.scope.server": "Shared",
+    "notes.scope.local": "This World",
+    "notes.scope.global": "All Worlds",
+    "notes.scope.remote": "This Server",
+    "notes.scope.server": "Everyone",
+    "notes.scope.local.description": "Only you can see this note, in this world",
+    "notes.scope.global.description": "Only you can see this note, in every world and server",
+    "notes.scope.remote.description": "Only you can see this note, on this server",
+    "notes.scope.server.description": "Everyone on this server can see and edit this note",
 
     "_comment": "CATEGORIES",
     "key.category.notes.keys": "Notes",
